@@ -1,8 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,HTTPException
 from pydantic import BaseModel, Field
 from typing import Literal
 
-from src.llm.client import ask_llm
+from src.llm.client import ask_llm, repair_llm_response
+from src.llm.parser import parse_llm_response
 
 app = FastAPI()
 
@@ -26,8 +27,23 @@ def triage(request: TriageRequest):
 
     prompt = prompt.replace("{{USER_TEXT}}", request.text)
 
-    llm_response = ask_llm(prompt)
+    llm_response = "I cannot classify this message."
+
+    try:
+        parsed_response = parse_llm_response(llm_response)
+        validated_response = TriageResponse(**parsed_response)
+    except ValueError as e:
+        
+        try:
+            repaired_response = repair_llm_response(llm_response, str(e))
+            parsed_response = parse_llm_response(repaired_response)
+            validated_response = TriageResponse(**parsed_response)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="LLM output failed validation after one repair attempt")
+            
 
     return {
-        "llm_response": llm_response
+        "validated_llm_response": validated_response,
+        "parsed_llm_response": parsed_response,
+        "repaired_llm_response": repaired_response
     }
