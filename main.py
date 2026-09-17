@@ -1,6 +1,7 @@
 from fastapi import FastAPI,HTTPException
 from pydantic import BaseModel, Field
 from typing import Literal
+from openai import APITimeoutError, RateLimitError, APIStatusError
 
 from src.llm.client import ask_llm, repair_llm_response
 from src.llm.parser import parse_llm_response
@@ -27,7 +28,16 @@ def triage(request: TriageRequest):
 
     prompt = prompt.replace("{{USER_TEXT}}", request.text)
 
-    llm_response = "I cannot classify this message."
+    try:
+        llm_response = ask_llm(prompt)
+    except APITimeoutError:
+        raise HTTPException(status_code=504, detail="LLM request timed out after 3 retry")
+    except RateLimitError:
+        raise HTTPException(status_code=429, detail="LLM rate limit exceeded after 3 retry")
+    except APIStatusError as e:
+        raise HTTPException(status_code=e.status_code, detail=f"LLM request failed: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"LLM request failed: {str(e)}")
 
     try:
         parsed_response = parse_llm_response(llm_response)
@@ -38,12 +48,17 @@ def triage(request: TriageRequest):
             repaired_response = repair_llm_response(llm_response, str(e))
             parsed_response = parse_llm_response(repaired_response)
             validated_response = TriageResponse(**parsed_response)
+        except APITimeoutError:
+            raise HTTPException(status_code=504, detail="LLM repair request timed out")
+        except RateLimitError:
+            raise HTTPException(status_code=429, detail="LLM repair rate limit exceeded")
+        except APIStatusError as e:
+            raise HTTPException(status_code=e.status_code, detail=f"LLM repair request failed: {str(e)}")
         except ValueError:
-            raise HTTPException(status_code=422, detail="LLM output failed validation after one repair attempt")
-            
+            raise HTTPException(status_code=422, detail="LLM output could not be parsed or validated after one repair attempt")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"LLM repair request failed: {str(e)}")
 
     return {
-        "validated_llm_response": validated_response,
-        "parsed_llm_response": parsed_response,
-        "repaired_llm_response": repaired_response
+        "validated_llm_response": validated_response
     }
