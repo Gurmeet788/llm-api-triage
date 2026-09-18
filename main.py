@@ -2,12 +2,14 @@ from fastapi import FastAPI,HTTPException
 from pydantic import BaseModel, Field
 from typing import Literal
 from openai import APITimeoutError, RateLimitError, APIStatusError
-
+import os
+from dotenv import load_dotenv
 from src.llm.client import ask_llm, repair_llm_response
 from src.llm.parser import parse_llm_response
 
-app = FastAPI()
+load_dotenv()
 
+app = FastAPI()
 
 class TriageRequest(BaseModel):
     text: str = Field(min_length=1, max_length=2000)
@@ -27,6 +29,12 @@ def triage(request: TriageRequest):
         prompt = file.read()
 
     prompt = prompt.replace("{{USER_TEXT}}", request.text)
+
+    if os.getenv("LLM_ENABLED", "true").lower() != "true":
+        raise HTTPException(
+            status_code=503,
+            detail="LLM service is currently disabled"
+        )
 
     try:
         llm_response = ask_llm(prompt)
