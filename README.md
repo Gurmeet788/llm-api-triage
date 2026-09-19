@@ -1,5 +1,3 @@
-Yes. Use this as your `README.md`. I’ve kept it professional but simple and aligned with the work you actually completed.
-
 ````markdown
 # LLM API Triage
 
@@ -331,8 +329,6 @@ Possible improvements include:
 * Automated tests for retry and repair behavior
 * Additional prompt versions for comparison
 
-````
-
 ## Evaluation Result
 
 - Test cases: 8
@@ -345,6 +341,5 @@ Possible improvements include:
 
 ### Evaluation Output
 
-![alt text](image.png)
+<img width="682" height="232" alt="image" src="https://github.com/user-attachments/assets/c3ea30c0-f427-43dd-aae8-e5c1ee64953f" />
 
-````
