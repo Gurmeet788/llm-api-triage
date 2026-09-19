@@ -1,0 +1,42 @@
+[
+  {
+    "text": "I was charged twice for my subscription.",
+    "expected_category": "billing",
+    "expected_urgency": "high"
+  },
+  {
+    "text": "I want to update my credit card because my old card expired.",
+    "expected_category": "billing",
+    "expected_urgency": "normal"
+  },
+  {
+    "text": "The app crashes every time I try to upload a file.",
+    "expected_category": "bug",
+    "expected_urgency": "high"
+  },
+  {
+    "text": "The profile page is showing my old username.",
+    "expected_category": "bug",
+    "expected_urgency": "normal"
+  },
+  {
+    "text": "Could you add dark mode to the application?",
+    "expected_category": "feature",
+    "expected_urgency": "normal"
+  },
+  {
+    "text": "It would be useful to have an option to export reports as PDF.",
+    "expected_category": "feature",
+    "expected_urgency": "low"
+  },
+  {
+    "text": "Where can I find the documentation for the API?",
+    "expected_category": "other",
+    "expected_urgency": "low"
+  },
+  {
+    "text": "Hello, I just wanted to say that I really like the new interface.",
+    "expected_category": "other",
+    "expected_urgency": "low"
+  }
+]

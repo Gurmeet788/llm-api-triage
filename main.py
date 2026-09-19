@@ -24,12 +24,13 @@ class TriageResponse(BaseModel):
 
 @app.post("/triage")
 def triage(request: TriageRequest):
-
+    
     with open("prompts/triage-v1.md", "r", encoding="utf-8") as file:
         prompt = file.read()
 
     prompt = prompt.replace("{{USER_TEXT}}", request.text)
 
+    print(os.getenv("LLM_ENABLED"))
     if os.getenv("LLM_ENABLED", "true").lower() != "true":
         raise HTTPException(
             status_code=503,
